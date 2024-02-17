@@ -17,9 +17,18 @@ class Auth
 
     public function register(RegisterRequest $request): UserResource
     {
+        return $this->handleRegister($request);
+    }
+
+    /**
+     * @param RegisterRequest $request
+     * @return UserResource
+     */
+    public function handleRegister(RegisterRequest $request): UserResource
+    {
         $user = $this->repository->create($request->all());
         $user->message = "User created successfully";
-        return new UserResource($user) ;
+        return new UserResource($user);
     }
 
     /**
@@ -27,15 +36,25 @@ class Auth
      */
     public function login(LoginRequest $request):UserResource
     {
-        if($this->isCorrectCredentials($request)){
-           $user = $this->repository->where('email', $request->input('email'))->first();
-           $user->message = "User logged successfully";
-           return new UserResource($user);
+        if(!$this->isCorrectCredentials($request)){
+            throw new IncorrectLoginCredentialsException();
         }
-        throw new IncorrectLoginCredentialsException();
+        return $this->handleLogin($request);
     }
+
     private function isCorrectCredentials(LoginRequest $request): bool
     {
         return AuthenticateFacede::attempt($request->all());
+    }
+
+    /**
+     * @param LoginRequest $request
+     * @return UserResource
+     */
+    public function handleLogin(LoginRequest $request): UserResource
+    {
+        $user = $this->repository->where('email', $request->input('email'))->first();
+        $user->message = "User logged successfully";
+        return new UserResource($user);
     }
 }

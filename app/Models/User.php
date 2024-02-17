@@ -42,4 +42,9 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function getPlainTextToken(): string
+    {
+        return $this->createToken('auth_token')->plainTextToken;
+    }
 }

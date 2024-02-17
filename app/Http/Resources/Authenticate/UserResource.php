@@ -22,7 +22,7 @@ class UserResource extends JsonResource
             'user' => [
                 'name' => $this->name,
                 'email' => $this->email,
-                'token' => $this->createToken('auth_token')->plainTextToken,
+                'token' => $this->getPlainTextToken(),
             ]
         ];
     }
