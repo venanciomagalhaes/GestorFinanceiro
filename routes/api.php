@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+require_once __DIR__ . "/authenticate/auth.php";
+
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
