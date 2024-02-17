@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Authenticate\LoginRequest;
 use App\Http\Requests\Authenticate\RegisterRequest;
 use App\Http\Resources\Authenticate\UserResource;
+use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
@@ -22,5 +23,10 @@ class AuthController extends Controller
     public function login(LoginRequest $request): UserResource
     {
         return $this->business->login($request);
+    }
+
+    public function logout(Request $request): void
+    {
+         $this->business->logout($request);
     }
 }

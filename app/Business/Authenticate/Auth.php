@@ -7,6 +7,8 @@ use App\Http\Requests\Authenticate\LoginRequest;
 use App\Http\Requests\Authenticate\RegisterRequest;
 use App\Http\Resources\Authenticate\UserResource;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth as AuthenticateFacede;
 
 class Auth
@@ -17,19 +19,11 @@ class Auth
 
     public function register(RegisterRequest $request): UserResource
     {
-        return $this->handleRegister($request);
-    }
-
-    /**
-     * @param RegisterRequest $request
-     * @return UserResource
-     */
-    public function handleRegister(RegisterRequest $request): UserResource
-    {
         $user = $this->repository->create($request->all());
         $user->message = "User created successfully";
         return new UserResource($user);
     }
+
 
     /**
      * @throws IncorrectLoginCredentialsException
@@ -57,4 +51,10 @@ class Auth
         $user->message = "User logged successfully";
         return new UserResource($user);
     }
+
+    public function logout(Request $request): void
+    {
+        auth()->user()->tokens()->delete();
+    }
+
 }
