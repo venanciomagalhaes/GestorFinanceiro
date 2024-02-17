@@ -23,8 +23,25 @@ class Handler extends ExceptionHandler
      */
     public function register(): void
     {
+        $this->renderable(function (Throwable $e) {
+            return $this->treatPersonalExceptions($e);
+        });
+
         $this->reportable(function (Throwable $e) {
             //
         });
+    }
+
+    /**
+     * @param Throwable $e
+     * @return \Illuminate\Http\JsonResponse|void
+     */
+    function treatPersonalExceptions(Throwable $e)
+    {
+        if ($e instanceof PersonalExceptions) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], $e->getCode());
+        }
     }
 }
