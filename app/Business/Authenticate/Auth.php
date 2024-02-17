@@ -3,6 +3,7 @@
 namespace App\Business\Authenticate;
 
 use App\Http\Requests\Authenticate\RegisterRequest;
+use App\Http\Resources\Authenticate\RegisterResource;
 use App\Models\User;
 
 class Auth
@@ -11,8 +12,9 @@ class Auth
         private User $repository
     ){}
 
-    public function register(RegisterRequest $request)
+    public function register(RegisterRequest $request): RegisterResource
     {
-
+        $user = $this->repository->create($request->all());
+        return new RegisterResource($user) ;
     }
 }

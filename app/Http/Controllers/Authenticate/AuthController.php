@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Authenticate;
 use App\Business\Authenticate\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Authenticate\RegisterRequest;
+use App\Http\Resources\Authenticate\RegisterResource;
 
 class AuthController extends Controller
 {
@@ -12,8 +13,8 @@ class AuthController extends Controller
         private Auth $business
     ){}
 
-    public function register(RegisterRequest $request)
+    public function register(RegisterRequest $request): RegisterResource
     {
-       $this->business->register($request);
+       return $this->business->register($request);
     }
 }
