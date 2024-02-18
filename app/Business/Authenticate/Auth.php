@@ -11,7 +11,7 @@ use App\Http\Requests\Authenticate\RegisterRequest;
 use App\Http\Requests\Authenticate\ResetPasswordRequest;
 use App\Http\Resources\Authenticate\ForgotPasswordResource;
 use App\Http\Resources\Authenticate\ResetPasswordResource;
-use App\Http\Resources\Authenticate\UserResource;
+use App\Http\Resources\Authenticate\AuthResource;
 use App\Http\Resources\Authenticate\VerifyEmailResource;
 use App\Models\User;
 use App\Notifications\Authenticate\ResetPasswordNotification;
@@ -29,20 +29,20 @@ class Auth
         private User $repository
     ){}
 
-    public function register(RegisterRequest $request): UserResource
+    public function register(RegisterRequest $request): AuthResource
     {
         /** @var $user User*/
         $user = $this->repository->create($request->all());
         $user->message = "User created successfully";
         $user->notify(new WelcomeNotification($user));
         $user->notify(new VerifyEmailNotification($user));
-        return new UserResource($user);
+        return new AuthResource($user);
     }
 
     /**
      * @throws IncorrectLoginCredentialsException
      */
-    public function login(LoginRequest $request):UserResource
+    public function login(LoginRequest $request):AuthResource
     {
         if(!$this->isCorrectCredentials($request)){
             throw new IncorrectLoginCredentialsException();
@@ -57,14 +57,14 @@ class Auth
 
     /**
      * @param LoginRequest $request
-     * @return UserResource
+     * @return AuthResource
      */
-    public function handleLogin(LoginRequest $request): UserResource
+    public function handleLogin(LoginRequest $request): AuthResource
     {
         /** @var $user User*/
         $user = $this->repository->where('email', $request->input('email'))->first();
         $user->message = "User logged successfully";
-        return new UserResource($user);
+        return new AuthResource($user);
     }
 
     public function logout(): void

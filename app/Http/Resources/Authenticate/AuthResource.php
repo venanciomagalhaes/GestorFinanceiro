@@ -6,7 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class UserResource extends JsonResource
+class AuthResource extends JsonResource
 {
     public static $wrap = '';
     /**
@@ -18,12 +18,12 @@ class UserResource extends JsonResource
     {
         /** @var $this User*/
         return [
+            'token' => $this->getPlainTextToken(),
             'message' => $this->message,
             'user' => [
                 'name' => $this->name,
                 'email' => $this->email,
-                'token' => $this->getPlainTextToken(),
-            ]
+            ],
         ];
     }
 }

@@ -13,7 +13,7 @@ use App\Http\Requests\Authenticate\RegisterRequest;
 use App\Http\Requests\Authenticate\ResetPasswordRequest;
 use App\Http\Resources\Authenticate\ForgotPasswordResource;
 use App\Http\Resources\Authenticate\ResetPasswordResource;
-use App\Http\Resources\Authenticate\UserResource;
+use App\Http\Resources\Authenticate\AuthResource;
 use App\Http\Resources\Authenticate\VerifyEmailResource;
 use Illuminate\Http\Request;
 
@@ -23,7 +23,7 @@ class AuthController extends Controller
         private Auth $business
     ){}
 
-    public function register(RegisterRequest $request): UserResource
+    public function register(RegisterRequest $request): AuthResource
     {
        return $this->business->register($request);
     }
@@ -31,7 +31,7 @@ class AuthController extends Controller
     /**
      * @throws IncorrectLoginCredentialsException
      */
-    public function login(LoginRequest $request): UserResource
+    public function login(LoginRequest $request): AuthResource
     {
         return $this->business->login($request);
     }

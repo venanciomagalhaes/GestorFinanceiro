@@ -7,6 +7,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class ResetPasswordResource extends JsonResource
 {
+    public static $wrap = '';
     /**
      * Transform the resource into an array.
      *
