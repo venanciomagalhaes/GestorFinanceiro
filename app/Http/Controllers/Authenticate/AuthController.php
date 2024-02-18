@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Authenticate;
 
 use App\Business\Authenticate\Auth;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Authenticate\ForgotPasswordRequest;
 use App\Http\Requests\Authenticate\LoginRequest;
 use App\Http\Requests\Authenticate\RegisterRequest;
+use App\Http\Resources\Authenticate\ForgotPasswordResource;
 use App\Http\Resources\Authenticate\UserResource;
 use Illuminate\Http\Request;
 
@@ -27,6 +29,11 @@ class AuthController extends Controller
 
     public function logout(Request $request): void
     {
-         $this->business->logout($request);
+         $this->business->logout();
+    }
+
+    public function forgotPassword(ForgotPasswordRequest $request): ForgotPasswordResource
+    {
+        return $this->business->forgotPassword($request);
     }
 }

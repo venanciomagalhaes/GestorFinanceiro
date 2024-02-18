@@ -3,13 +3,15 @@
 namespace App\Business\Authenticate;
 
 use App\Exceptions\Authenticate\IncorrectLoginCredentialsException;
+use App\Http\Requests\Authenticate\ForgotPasswordRequest;
 use App\Http\Requests\Authenticate\LoginRequest;
 use App\Http\Requests\Authenticate\RegisterRequest;
+use App\Http\Resources\Authenticate\ForgotPasswordResource;
 use App\Http\Resources\Authenticate\UserResource;
 use App\Models\User;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth as AuthenticateFacede;
+use App\Notifications\Authenticate\ResetPasswordNotification;
+use Illuminate\Support\Facades\Auth as AuthenticateFacade;
+use Illuminate\Support\Str;
 
 class Auth
 {
@@ -38,7 +40,7 @@ class Auth
 
     private function isCorrectCredentials(LoginRequest $request): bool
     {
-        return AuthenticateFacede::attempt($request->all());
+        return AuthenticateFacade::attempt($request->all());
     }
 
     /**
@@ -52,9 +54,31 @@ class Auth
         return new UserResource($user);
     }
 
-    public function logout(Request $request): void
+    public function logout(): void
     {
         auth()->user()->tokens()->delete();
+    }
+
+    public function forgotPassword(ForgotPasswordRequest $request): ForgotPasswordResource
+    {
+        /** @var $user User*/
+        $user = $this->repository->where('email', $request->input('email'))->first();
+        $hasUser = (bool) $user;
+        if($hasUser){
+            $this->setRememberToken($user);
+            $user->notify(new ResetPasswordNotification($user));
+        }
+        return new ForgotPasswordResource($request);
+    }
+
+    /**
+     * @param $user
+     * @return void
+     */
+    public function setRememberToken($user): void
+    {
+        $user->remember_token = Str::random(50);
+        $user->save();
     }
 
 }
