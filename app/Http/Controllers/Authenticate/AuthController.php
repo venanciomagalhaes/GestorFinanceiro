@@ -3,11 +3,15 @@
 namespace App\Http\Controllers\Authenticate;
 
 use App\Business\Authenticate\Auth;
+use App\Exceptions\Authenticate\IncorrectLoginCredentialsException;
+use App\Exceptions\Authenticate\InvalidTokenResetPasswordException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Authenticate\ForgotPasswordRequest;
 use App\Http\Requests\Authenticate\LoginRequest;
 use App\Http\Requests\Authenticate\RegisterRequest;
+use App\Http\Requests\Authenticate\ResetPasswordRequest;
 use App\Http\Resources\Authenticate\ForgotPasswordResource;
+use App\Http\Resources\Authenticate\ResetPasswordResource;
 use App\Http\Resources\Authenticate\UserResource;
 use Illuminate\Http\Request;
 
@@ -22,6 +26,9 @@ class AuthController extends Controller
        return $this->business->register($request);
     }
 
+    /**
+     * @throws IncorrectLoginCredentialsException
+     */
     public function login(LoginRequest $request): UserResource
     {
         return $this->business->login($request);
@@ -35,5 +42,13 @@ class AuthController extends Controller
     public function forgotPassword(ForgotPasswordRequest $request): ForgotPasswordResource
     {
         return $this->business->forgotPassword($request);
+    }
+
+    /**
+     * @throws InvalidTokenResetPasswordException
+     */
+    public function resetPassword(ResetPasswordRequest $request, string $token): ResetPasswordResource
+    {
+        return $this->business->resetPassword($request,$token);
     }
 }

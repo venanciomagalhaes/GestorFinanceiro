@@ -3,10 +3,13 @@
 namespace App\Business\Authenticate;
 
 use App\Exceptions\Authenticate\IncorrectLoginCredentialsException;
+use App\Exceptions\Authenticate\InvalidTokenResetPasswordException;
 use App\Http\Requests\Authenticate\ForgotPasswordRequest;
 use App\Http\Requests\Authenticate\LoginRequest;
 use App\Http\Requests\Authenticate\RegisterRequest;
+use App\Http\Requests\Authenticate\ResetPasswordRequest;
 use App\Http\Resources\Authenticate\ForgotPasswordResource;
+use App\Http\Resources\Authenticate\ResetPasswordResource;
 use App\Http\Resources\Authenticate\UserResource;
 use App\Models\User;
 use App\Notifications\Authenticate\ResetPasswordNotification;
@@ -25,7 +28,6 @@ class Auth
         $user->message = "User created successfully";
         return new UserResource($user);
     }
-
 
     /**
      * @throws IncorrectLoginCredentialsException
@@ -78,6 +80,33 @@ class Auth
     public function setRememberToken($user): void
     {
         $user->remember_token = Str::random(50);
+        $user->save();
+    }
+
+    /**
+     * @throws InvalidTokenResetPasswordException
+     */
+    public function resetPassword(ResetPasswordRequest $request, string $token): ResetPasswordResource
+    {
+        /** @var $user User*/
+        $user = $this->repository->where('remember_token',$token)->first();
+        $validToken = (bool) $user;
+        if(!$validToken){
+            throw new InvalidTokenResetPasswordException();
+        }
+        $this->changePassword($user, $request);
+        return new ResetPasswordResource($request);
+    }
+
+    /**
+     * @param User $user
+     * @param ResetPasswordRequest $request
+     * @return void
+     */
+    public function changePassword(User $user, ResetPasswordRequest $request): void
+    {
+        $user->update($request->all());
+        $user->remember_token = "";
         $user->save();
     }
 
