@@ -4,6 +4,7 @@ namespace App\Business\Authenticate;
 
 use App\Exceptions\Authenticate\IncorrectLoginCredentialsException;
 use App\Exceptions\Authenticate\InvalidTokenResetPasswordException;
+use App\Exceptions\Authenticate\InvalidTokenVerifyEmail;
 use App\Http\Requests\Authenticate\ForgotPasswordRequest;
 use App\Http\Requests\Authenticate\LoginRequest;
 use App\Http\Requests\Authenticate\RegisterRequest;
@@ -11,9 +12,15 @@ use App\Http\Requests\Authenticate\ResetPasswordRequest;
 use App\Http\Resources\Authenticate\ForgotPasswordResource;
 use App\Http\Resources\Authenticate\ResetPasswordResource;
 use App\Http\Resources\Authenticate\UserResource;
+use App\Http\Resources\Authenticate\VerifyEmailResource;
 use App\Models\User;
 use App\Notifications\Authenticate\ResetPasswordNotification;
+use App\Notifications\Authenticate\VerifyEmailNotification;
+use App\Notifications\Authenticate\WelcomeNotification;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth as AuthenticateFacade;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Str;
 
 class Auth
@@ -24,8 +31,11 @@ class Auth
 
     public function register(RegisterRequest $request): UserResource
     {
+        /** @var $user User*/
         $user = $this->repository->create($request->all());
         $user->message = "User created successfully";
+        $user->notify(new WelcomeNotification($user));
+        $user->notify(new VerifyEmailNotification($user));
         return new UserResource($user);
     }
 
@@ -51,6 +61,7 @@ class Auth
      */
     public function handleLogin(LoginRequest $request): UserResource
     {
+        /** @var $user User*/
         $user = $this->repository->where('email', $request->input('email'))->first();
         $user->message = "User logged successfully";
         return new UserResource($user);
@@ -79,6 +90,7 @@ class Auth
      */
     public function setRememberToken($user): void
     {
+        /** @var $user User*/
         $user->remember_token = Str::random(50);
         $user->save();
     }
@@ -107,6 +119,33 @@ class Auth
     {
         $user->update($request->all());
         $user->remember_token = "";
+        $user->save();
+    }
+
+    /**
+     * @throws InvalidTokenVerifyEmail
+     */
+    public function verifyEmail(Request $request, string $token): VerifyEmailResource
+    {
+        /** @var $user User*/
+        $email = Crypt::decrypt($token);
+        $user = $this->repository->where('email', $email)->first();
+        $hasUser = (bool) $user;
+        $hasLastVerificationEmail = $user->email_verified_at;
+        if(!$hasUser || $hasLastVerificationEmail ){
+            throw new InvalidTokenVerifyEmail();
+        }
+        $this->registerVerifyEmail($user);
+        return new VerifyEmailResource($request);
+    }
+
+    /**
+     * @param User $user
+     * @return void
+     */
+    public function registerVerifyEmail(User $user): void
+    {
+        $user->email_verified_at = Carbon::now();
         $user->save();
     }
 
